@@ -25,115 +25,32 @@ def preprocess(df):
     return df
 
 df = preprocess(df)
+
+
+
 # ====== FILTROS ======
 
-w1, w2, w3 = st.columns(3)
+w1, w2, w3, w4 = st.columns(4)
 
 with w1:
-    prefixo = st.multiselect("des_equipe", sorted(df["des_equipe"].dropna().unique()))
-
-with w2:
     meses = sorted(df["data_servico"].dropna().dt.month.unique())
     mes = st.multiselect("Mês", meses)
 
-with w3:
+with w2:
     anos = sorted(df["data_servico"].dropna().dt.year.unique())
     ano = st.multiselect("Ano", anos)
 
 df_f = df.copy()
-if prefixo :
-    df_f = df_f[df_f["des_equipe"].isin(prefixo)]
 
-df_f = df.copy()
 if mes :
-    df_f = df_f[df_f["data_servico"].isin(mes)]
+    df_f = df_f[df_f["data_servico"].dt.month.isin(mes)]
 
+if ano :
+    df_f = df_f[df_f["data_servico"].dt.year.isin(ano)]
 
-df_f = df.copy()
-if mes :
-    df_f = df_f[df_f["data_servico"].isin(mes)]
 
 # ====== CONTEUDO ======
 st.sidebar.header("Avanço Financeiro")
-
-# ====== KPI ======
-
-# ====== GRAFICOS ======
-
-# q1, q2, q3 = st.columns(3)
-
-# with q1:
-#     alrluv204m = ["AL-RLU-V204M"]
-#     df_alrluv204m = df_f[df_f["des_equipe"].isin(alrluv204m)]
-
-#     st.markdown("### AL-RLU-V204M")
-
-#     produtividade = (
-#         df_alrluv204m.groupby("data_servico")["valor_total"]
-#         .sum()
-#         .reset_index(name="Produtividade")
-#     )
-
-#     fig = px.line(
-#         produtividade,
-#         x="data_servico",
-#         y="Produtividade",
-#         markers=True,
-#         text=produtividade["Produtividade"].map(lambda x: f"{x:,.2f}")
-#     )
-
-#     fig.update_traces(textposition="top center")
-
-#     st.plotly_chart(fig, use_container_width=True)
-
-# with q2:
-#     alpjao200m = ["AL-PJA-O200M"]
-#     df_alpjao200m = df_f[df_f["des_equipe"].isin(alpjao200m)]
-
-#     st.markdown("### AL-PJA-O200M")
-
-#     produtividade = (
-#         df_alpjao200m.groupby("data_servico")["valor_total"]
-#         .sum()
-#         .reset_index(name="Produtividade")
-#     )
-
-#     fig = px.line(
-#         produtividade,
-#         x="data_servico",
-#         y="Produtividade",
-#         markers=True,
-#         text=produtividade["Produtividade"].map(lambda x: f"{x:,.2f}")
-#     )
-
-#     fig.update_traces(textposition="top center")
-
-#     st.plotly_chart(fig, use_container_width=True)
-
-# with q3:
-#     alpcvo204m = ["AL-PCV-O204M"]
-#     df_alpcvo204m = df_f[df_f["des_equipe"].isin(alpcvo204m)]
-
-#     st.markdown("### AL-PCV-O204M")
-
-#     produtividade = (
-#         df_alpcvo204m.groupby("data_servico")["valor_total"]
-#         .sum()
-#         .reset_index(name="Produtividade")
-#     )
-
-#     fig = px.line(
-#         produtividade,
-#         x="data_servico",
-#         y="Produtividade",
-#         markers=True,
-#         text=produtividade["Produtividade"].map(lambda x: f"{x:,.2f}")
-#     )
-
-#     fig.update_traces(textposition="top center")
-
-#     st.plotly_chart(fig, use_container_width=True)
-
 
 e1, e2 = st.columns(2)
 
@@ -142,7 +59,17 @@ with e1:
     # ====== TITULO ======
 
     st.markdown(
-    "<h3 style='text-align: center;'>Produtividade Acumulada AL-RLU-V204M</h3>",
+    """
+    <h5 style="
+        text-align: center;
+        background-color: #060054;
+        color: white;
+        padding: 10px;
+        border-radius: 8px;
+    ">
+        AL-RLU-V204M
+    </h5>
+    """,
     unsafe_allow_html=True
     )
 
@@ -167,7 +94,7 @@ with e1:
 
     # ====== META DIARIA DEFINIDA MANUALMENTE ======
 
-    meta_diaria = 5000
+    meta_diaria = 2740.01
 
     # ====== CRIA A META ACUMULADA DIARIA ======
 
@@ -192,14 +119,27 @@ with e1:
     # ====== CRIA O KPI PARA ACOMPANHAMENTO ======
 
     delta = round(realizado - meta, 2)
+    media = diario["Produtividade_Dia"].mean()
 
-    st.metric(
-        "Produtividade Acumulada",
-        f"R$ {realizado:,.2f}",
-        delta=delta,
-        delta_color="normal"
-    )
+    a1, a2, a3 = st.columns(3)
 
+    with a1:
+        st.metric(
+            "Produtividade Acumulada",
+            f"R$ {realizado:,.2f}",
+            delta=delta,
+            delta_color="normal"
+        )
+    with a2:
+        st.metric(
+            "Meta Acumulada",
+            f"R$ {meta:,.2f}"
+        )
+    with a3:
+        st.metric(
+            "Media de produtividade",
+            f"R$ {media:,.2f}"
+        )
     st.caption(f"Variação em relação à meta: R$ {delta:,.2f}")
 
      # ====== CRIA O GRAFICO ======
@@ -251,7 +191,17 @@ with e2:
     # ====== TITULO ======
 
     st.markdown(
-    "<h3 style='text-align: center;'>Produtividade Acumulada AL-PJA-O200M</h3>",
+    """
+    <h5 style="
+        text-align: center;
+        background-color: #060054;
+        color: white;
+        padding: 10px;
+        border-radius: 8px;
+    ">
+        AL-PJA-O200M
+    </h5>
+    """,
     unsafe_allow_html=True
     )
 
@@ -276,7 +226,7 @@ with e2:
 
     # ====== META DIARIA DEFINIDA MANUALMENTE ======
 
-    meta_diaria = 5000
+    meta_diaria = 3919.14
 
     # ====== CRIA A META ACUMULADA DIARIA ======
 
@@ -301,14 +251,27 @@ with e2:
     # ====== CRIA O KPI PARA ACOMPANHAMENTO ======
 
     delta = round(realizado - meta, 2)
+    media = diario["Produtividade_Dia"].mean()
 
-    st.metric(
-        "Produtividade Acumulada",
-        f"R$ {realizado:,.2f}",
-        delta=delta,
-        delta_color="normal"
-    )
+    a1, a2, a3 = st.columns(3)
 
+    with a1:
+        st.metric(
+            "Produtividade Acumulada",
+            f"R$ {realizado:,.2f}",
+            delta=delta,
+            delta_color="normal"
+        )
+    with a2:
+        st.metric(
+            "Meta Acumulada",
+            f"R$ {meta:,.2f}"
+        )
+    with a3:
+        st.metric(
+            "Media de produtividade",
+            f"R$ {media:,.2f}"
+        )
     st.caption(f"Variação em relação à meta: R$ {delta:,.2f}")
 
      # ====== CRIA O GRAFICO ======
@@ -362,7 +325,17 @@ with r1:
     # ====== TITULO ======
 
     st.markdown(
-    "<h3 style='text-align: center;'>Produtividade Acumulada AL-PCV-O204M</h3>",
+    """
+    <h5 style="
+        text-align: center;
+        background-color: #060054;
+        color: white;
+        padding: 10px;
+        border-radius: 8px;
+    ">
+        AL-PCV-O204M
+    </h5>
+    """,
     unsafe_allow_html=True
     )
 
@@ -387,7 +360,7 @@ with r1:
 
     # ====== META DIARIA DEFINIDA MANUALMENTE ======
 
-    meta_diaria = 5000
+    meta_diaria = 3919.14
 
     # ====== CRIA A META ACUMULADA DIARIA ======
 
@@ -412,14 +385,27 @@ with r1:
     # ====== CRIA O KPI PARA ACOMPANHAMENTO ======
 
     delta = round(realizado - meta, 2)
+    media = diario["Produtividade_Dia"].mean()
 
-    st.metric(
-        "Produtividade Acumulada",
-        f"R$ {realizado:,.2f}",
-        delta=delta,
-        delta_color="normal"
-    )
+    a1, a2, a3 = st.columns(3)
 
+    with a1:
+        st.metric(
+            "Produtividade Acumulada",
+            f"R$ {realizado:,.2f}",
+            delta=delta,
+            delta_color="normal"
+        )
+    with a2:
+        st.metric(
+            "Meta Acumulada",
+            f"R$ {meta:,.2f}"
+        )
+    with a3:
+        st.metric(
+            "Media de produtividade",
+            f"R$ {media:,.2f}"
+        )
     st.caption(f"Variação em relação à meta: R$ {delta:,.2f}")
 
      # ====== CRIA O GRAFICO ======
@@ -471,7 +457,17 @@ with r2:
     # ====== TITULO ======
 
     st.markdown(
-    "<h3 style='text-align: center;'>Produtividade Acumulada AL-PCV-U201M</h3>",
+    """
+    <h5 style="
+        text-align: center;
+        background-color: #060054;
+        color: white;
+        padding: 10px;
+        border-radius: 8px;
+    ">
+        AL-PCV-U201M
+    </h5>
+    """,
     unsafe_allow_html=True
     )
 
@@ -496,7 +492,7 @@ with r2:
 
     # ====== META DIARIA DEFINIDA MANUALMENTE ======
 
-    meta_diaria = 5000
+    meta_diaria = 739.25
 
     # ====== CRIA A META ACUMULADA DIARIA ======
 
@@ -521,14 +517,27 @@ with r2:
     # ====== CRIA O KPI PARA ACOMPANHAMENTO ======
 
     delta = round(realizado - meta, 2)
+    media = diario["Produtividade_Dia"].mean()
 
-    st.metric(
-        "Produtividade Acumulada",
-        f"R$ {realizado:,.2f}",
-        delta=delta,
-        delta_color="normal"
-    )
+    a1, a2, a3 = st.columns(3)
 
+    with a1:
+        st.metric(
+            "Produtividade Acumulada",
+            f"R$ {realizado:,.2f}",
+            delta=delta,
+            delta_color="normal"
+        )
+    with a2:
+        st.metric(
+            "Meta Acumulada",
+            f"R$ {meta:,.2f}"
+        )
+    with a3:
+        st.metric(
+            "Media de produtividade",
+            f"R$ {media:,.2f}"
+        )
     st.caption(f"Variação em relação à meta: R$ {delta:,.2f}")
 
      # ====== CRIA O GRAFICO ======
@@ -582,7 +591,17 @@ with t1:
     # ====== TITULO ======
 
     st.markdown(
-    "<h3 style='text-align: center;'>Produtividade Acumulada AL-TBM-O201N</h3>",
+    """
+    <h5 style="
+        text-align: center;
+        background-color: #060054;
+        color: white;
+        padding: 10px;
+        border-radius: 8px;
+    ">
+        AL-TBM-O201N
+    </h5>
+    """,
     unsafe_allow_html=True
     )
 
@@ -607,7 +626,7 @@ with t1:
 
     # ====== META DIARIA DEFINIDA MANUALMENTE ======
 
-    meta_diaria = 5000
+    meta_diaria = 3919.14
 
     # ====== CRIA A META ACUMULADA DIARIA ======
 
@@ -632,14 +651,27 @@ with t1:
     # ====== CRIA O KPI PARA ACOMPANHAMENTO ======
 
     delta = round(realizado - meta, 2)
+    media = diario["Produtividade_Dia"].mean()
 
-    st.metric(
-        "Produtividade Acumulada",
-        f"R$ {realizado:,.2f}",
-        delta=delta,
-        delta_color="normal"
-    )
+    a1, a2, a3 = st.columns(3)
 
+    with a1:
+        st.metric(
+            "Produtividade Acumulada",
+            f"R$ {realizado:,.2f}",
+            delta=delta,
+            delta_color="normal"
+        )
+    with a2:
+        st.metric(
+            "Meta Acumulada",
+            f"R$ {meta:,.2f}"
+        )
+    with a3:
+        st.metric(
+            "Media de produtividade",
+            f"R$ {media:,.2f}"
+        )
     st.caption(f"Variação em relação à meta: R$ {delta:,.2f}")
 
      # ====== CRIA O GRAFICO ======
@@ -691,7 +723,17 @@ with t2:
     # ====== TITULO ======
 
     st.markdown(
-    "<h3 style='text-align: center;'>Produtividade Acumulada AL-TBM-O201M</h3>",
+    """
+    <h5 style="
+        text-align: center;
+        background-color: #060054;
+        color: white;
+        padding: 10px;
+        border-radius: 8px;
+    ">
+        AL-TBM-O201M
+    </h5>
+    """,
     unsafe_allow_html=True
     )
 
@@ -716,7 +758,7 @@ with t2:
 
     # ====== META DIARIA DEFINIDA MANUALMENTE ======
 
-    meta_diaria = 5000
+    meta_diaria = 3919.14
 
     # ====== CRIA A META ACUMULADA DIARIA ======
 
@@ -741,14 +783,27 @@ with t2:
     # ====== CRIA O KPI PARA ACOMPANHAMENTO ======
 
     delta = round(realizado - meta, 2)
+    media = diario["Produtividade_Dia"].mean()
 
-    st.metric(
-        "Produtividade Acumulada",
-        f"R$ {realizado:,.2f}",
-        delta=delta,
-        delta_color="normal"
-    )
+    a1, a2, a3 = st.columns(3)
 
+    with a1:
+        st.metric(
+            "Produtividade Acumulada",
+            f"R$ {realizado:,.2f}",
+            delta=delta,
+            delta_color="normal"
+        )
+    with a2:
+        st.metric(
+            "Meta Acumulada",
+            f"R$ {meta:,.2f}"
+        )
+    with a3:
+        st.metric(
+            "Media de produtividade",
+            f"R$ {media:,.2f}"
+        )
     st.caption(f"Variação em relação à meta: R$ {delta:,.2f}")
 
      # ====== CRIA O GRAFICO ======
@@ -802,7 +857,17 @@ with y1:
     # ====== TITULO ======
 
     st.markdown(
-    "<h3 style='text-align: center;'>Produtividade Acumulada AL-TBM-O202M</h3>",
+    """
+    <h5 style="
+        text-align: center;
+        background-color: #060054;
+        color: white;
+        padding: 10px;
+        border-radius: 8px;
+    ">
+        AL-TBM-O202M
+    </h5>
+    """,
     unsafe_allow_html=True
     )
 
@@ -827,7 +892,7 @@ with y1:
 
     # ====== META DIARIA DEFINIDA MANUALMENTE ======
 
-    meta_diaria = 5000
+    meta_diaria = 3919.14
 
     # ====== CRIA A META ACUMULADA DIARIA ======
 
@@ -852,14 +917,27 @@ with y1:
     # ====== CRIA O KPI PARA ACOMPANHAMENTO ======
 
     delta = round(realizado - meta, 2)
+    media = diario["Produtividade_Dia"].mean()
 
-    st.metric(
-        "Produtividade Acumulada",
-        f"R$ {realizado:,.2f}",
-        delta=delta,
-        delta_color="normal"
-    )
+    a1, a2, a3 = st.columns(3)
 
+    with a1:
+        st.metric(
+            "Produtividade Acumulada",
+            f"R$ {realizado:,.2f}",
+            delta=delta,
+            delta_color="normal"
+        )
+    with a2:
+        st.metric(
+            "Meta Acumulada",
+            f"R$ {meta:,.2f}"
+        )
+    with a3:
+        st.metric(
+            "Media de produtividade",
+            f"R$ {media:,.2f}"
+        )
     st.caption(f"Variação em relação à meta: R$ {delta:,.2f}")
 
      # ====== CRIA O GRAFICO ======
@@ -911,9 +989,20 @@ with y2:
     # ====== TITULO ======
 
     st.markdown(
-    "<h3 style='text-align: center;'>Produtividade Acumulada AL-TBM-U202M</h3>",
-    unsafe_allow_html=True
-    )
+        """
+        <h5 style="
+            text-align: center;
+            background-color: #060054;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+        ">
+           AL-TBM-U202M
+        </h5>
+        """,
+        unsafe_allow_html=True
+        )
+
 
     # ====== DEFINE FILTRO FIXO ======
 
@@ -936,7 +1025,7 @@ with y2:
 
     # ====== META DIARIA DEFINIDA MANUALMENTE ======
 
-    meta_diaria = 5000
+    meta_diaria = 739.25
 
     # ====== CRIA A META ACUMULADA DIARIA ======
 
@@ -961,14 +1050,27 @@ with y2:
     # ====== CRIA O KPI PARA ACOMPANHAMENTO ======
 
     delta = round(realizado - meta, 2)
+    media = diario["Produtividade_Dia"].mean()
 
-    st.metric(
-        "Produtividade Acumulada",
-        f"R$ {realizado:,.2f}",
-        delta=delta,
-        delta_color="normal"
-    )
+    a1, a2, a3 = st.columns(3)
 
+    with a1:
+        st.metric(
+            "Produtividade Acumulada",
+            f"R$ {realizado:,.2f}",
+            delta=delta,
+            delta_color="normal"
+        )
+    with a2:
+        st.metric(
+            "Meta Acumulada",
+            f"R$ {meta:,.2f}"
+        )
+    with a3:
+        st.metric(
+            "Media de produtividade",
+            f"R$ {media:,.2f}"
+        )
     st.caption(f"Variação em relação à meta: R$ {delta:,.2f}")
 
      # ====== CRIA O GRAFICO ======
@@ -1022,9 +1124,19 @@ with u1:
     # ====== TITULO ======
 
     st.markdown(
-    "<h3 style='text-align: center;'>Produtividade Acumulada AL-TBM-V201M</h3>",
-    unsafe_allow_html=True
-    )
+        """
+        <h5 style="
+            text-align: center;
+            background-color: #060054;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+        ">
+           AL-TBM-U202M
+        </h5>
+        """,
+        unsafe_allow_html=True
+        )
 
     # ====== DEFINE FILTRO FIXO ======
 
@@ -1047,7 +1159,7 @@ with u1:
 
     # ====== META DIARIA DEFINIDA MANUALMENTE ======
 
-    meta_diaria = 5000
+    meta_diaria = 2740.01
 
     # ====== CRIA A META ACUMULADA DIARIA ======
 
@@ -1072,14 +1184,27 @@ with u1:
     # ====== CRIA O KPI PARA ACOMPANHAMENTO ======
 
     delta = round(realizado - meta, 2)
+    media = diario["Produtividade_Dia"].mean()
 
-    st.metric(
-        "Produtividade Acumulada",
-        f"R$ {realizado:,.2f}",
-        delta=delta,
-        delta_color="normal"
-    )
+    a1, a2, a3 = st.columns(3)
 
+    with a1:
+        st.metric(
+            "Produtividade Acumulada",
+            f"R$ {realizado:,.2f}",
+            delta=delta,
+            delta_color="normal"
+        )
+    with a2:
+        st.metric(
+            "Meta Acumulada",
+            f"R$ {meta:,.2f}"
+        )
+    with a3:
+        st.metric(
+            "Media de produtividade",
+            f"R$ {media:,.2f}"
+        )
     st.caption(f"Variação em relação à meta: R$ {delta:,.2f}")
 
      # ====== CRIA O GRAFICO ======
