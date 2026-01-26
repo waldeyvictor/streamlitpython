@@ -217,7 +217,7 @@ with e1: # AL-RLU-V204M
         x=0.5,
         title_text=""
     )
-)
+    )
 
     # ====== RENDERIZA O GRAFICO NO STREAMLIT ======
 
@@ -1230,7 +1230,7 @@ with y2: # AL-TBM-U202M
 
 u1, u2 = st.columns(2)
 
-with u1: # AL-TBM-U202M
+with u1: # AL-TBM-V201M
 
     # ====== TITULO ======
 
@@ -1243,7 +1243,7 @@ with u1: # AL-TBM-U202M
             padding: 10px;
             border-radius: 8px;
         ">
-           AL-TBM-U202M
+           AL-TBM-V201M
         </h5>
         """,
         unsafe_allow_html=True
@@ -1251,13 +1251,13 @@ with u1: # AL-TBM-U202M
 
     # ====== DEFINE FILTRO FIXO ======
 
-    altbmu202m = ["AL-TBM-U202M"]
-    df_altbmu202m = df_f[df_f["des_equipe"].isin(altbmu202m)]
+    altbmv201m = ["AL-TBM-V201M"]
+    df_altbmv201m = df_f[df_f["des_equipe"].isin(altbmv201m)]
 
     # ====== CRIA UM NOVO DF PARA SOMAR AS PRODUTIVIDAS DIARIAS ======
 
     diario = (
-        df_altbmu202m
+        df_altbmv201m
         .groupby("data_servico")["valor_total"]
         .sum()
         .reset_index(name="Produtividade_Dia")
