@@ -49,13 +49,13 @@ calendario_D = pd.DataFrame({
      "data_servico": pd.date_range(start=inicio_mes, end=hoje, freq="D")
 })
 
-calendario_B = pd.DataFrame({
-    "data_servico": pd.date_range(
-        start=inicio_ano,
-        end=fim_ano,
-        freq="B"  # B = Business Day (Seg–Sex)
-    )
-})
+# calendario_B = pd.DataFrame({
+#     "data_servico": pd.date_range(
+#         start=inicio_ano,
+#         end=fim_ano,
+#         freq="B"  # B = Business Day (Seg–Sex)
+#     )
+# })
 
 # ====== FILTROS ======
 
@@ -76,6 +76,16 @@ if mes :
 
 if ano :
     df_f = df_f[df_f["data_servico"].dt.year.isin(ano)]
+
+inicio = df_f["data_servico"].min()
+fim = df_f["data_servico"].max()
+calendario_B = pd.DataFrame({
+    "data_servico": pd.date_range(
+        start=inicio,
+        end=fim,
+        freq="B"  # B = Business Day (Seg–Sex)
+    )
+})
 
 st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
 
@@ -158,6 +168,7 @@ mensal = base_meses.merge(
     on=["mes", "mes_nome"],
     how="left"
 )
+mensal = mensal.sort_values("mes")
 
 mensal["Produtividade_Mes"] = mensal["Produtividade_Mes"].fillna(0)
 mensal["Produtividade_Acumulada"] = mensal["Produtividade_Mes"].cumsum()

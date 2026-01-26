@@ -283,7 +283,7 @@ with e2: # AL-PJA-O200M
 
     if base_final.empty:
         realizado = 0
-        meta = calendario_B["MEta_Acumulada"].iloc[-1]
+        meta = calendario_B["Meta_Acumulada"].iloc[-1]
         base_final_plot = pd.DataFrame({
         "data_servico": [],
         "Produtividade_Acumulada": [],

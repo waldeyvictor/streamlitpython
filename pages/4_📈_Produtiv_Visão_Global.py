@@ -39,19 +39,16 @@ def preprocess(df):
 
 df = preprocess(df)
 
+valor_bruto = df["valor_total"].sum()
+st.sidebar.write(f"Total Bruto na Planilha: R$ {valor_bruto:,.2f}")
+
 hoje = pd.Timestamp.today().normalize()
 inicio_mes = hoje.replace(day=1)
 calendario_D = pd.DataFrame({
      "data_servico": pd.date_range(start=inicio_mes, end=hoje, freq="D")
 })
 
-calendario_B = pd.DataFrame({
-    "data_servico": pd.date_range(
-        start=inicio_mes,
-        end=hoje,
-        freq="B"  # B = Business Day (Seg–Sex)
-    )
-})
+st.sidebar.write(f"Total Bruto na Planilha:{inicio_mes}")
 
 # ====== FILTROS ======
 
@@ -72,6 +69,16 @@ if mes :
 
 if ano :
     df_f = df_f[df_f["data_servico"].dt.year.isin(ano)]
+
+inicio = df_f["data_servico"].min()
+fim = df_f["data_servico"].max()
+calendario_B = pd.DataFrame({
+    "data_servico": pd.date_range(
+        start=inicio,
+        end=fim,
+        freq="D"
+    )
+})
 
 st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
 
@@ -100,28 +107,18 @@ unsafe_allow_html=True
 
 # ====== DEFINE FILTRO FIXO ======
 
-alrluv204m = ["AL-PJA-O200M","AL-PCV-O204M","AL-TBM-O201N","AL-TBM-O201M","AL-TBM-O202M","AL-RLU-V204M","AL-TBM-V201M","AL-PCV-T202M","AL-PCV-U201M","AL-TBM-U202M"]
-df_alrluv204m = df_f[df_f["des_equipe"].isin(alrluv204m)]
+equipes = ["AL-PJA-O200M","AL-PCV-O204M","AL-TBM-O201N","AL-TBM-O201M","AL-TBM-O202M","AL-RLU-V204M","AL-TBM-V201M","AL-PCV-T202M","AL-PCV-U201M","AL-TBM-U202M"]
+df_equipes = df_f[df_f["des_equipe"].isin(equipes)]
 
 # ====== CRIA UM NOVO DF PARA SOMAR AS PRODUTIVIDAS DIARIAS ======
 
 diario = (
-    df_alrluv204m
+    df_equipes
     .groupby("data_servico")["valor_total"]
     .sum()
     .reset_index(name="Produtividade_Dia")
     .sort_values("data_servico")
 )
-
-# ====== CRIA UMA NOVA COLUNA QUE SOMA AS PRODUTIVIDADES DIARIAS, GERANDO ASSIM O ACUMULADO ======
-
-diario["Produtividade_Acumulada"] = diario["Produtividade_Dia"].cumsum()
-
-# ====== META DIARIA DEFINIDA MANUALMENTE ======
-
-meta_diaria = 28649.28
-calendario_B["Meta_Dia"] = meta_diaria
-calendario_B["Meta_Acumulada"] = calendario_B["Meta_Dia"].cumsum()
 
 base_final = calendario_B.merge(
 diario,
@@ -129,17 +126,20 @@ on="data_servico",
 how="left"
 )
 
-# ====== CRIA A META ACUMULADA DIARIA ======
+base_final["Produtividade_Dia"] = (base_final["Produtividade_Dia"].fillna(0))
 
-#diario["Meta_Acumulada"] = meta_diaria*np.arange(1, len(diario) + 1)
-base_final["Produtividade_Dia"] = base_final["Produtividade_Dia"].fillna(0)
+# ====== META DIARIA DEFINIDA MANUALMENTE ======
+
+meta_diaria = 28649.28
+base_final["Meta_Dia"] = np.where(base_final["data_servico"].dt.weekday <= 5, meta_diaria, 0)
 base_final["Produtividade_Acumulada"] = base_final["Produtividade_Dia"].cumsum()
+base_final["Meta_Acumulada"] = base_final["Meta_Dia"].cumsum()
 
 # ====== ARMAZENA O UTILMO VALOR DO ACUMULADO DENTRO DA VARIAVEL ======
 
 if base_final.empty:
     realizado = 0
-    meta = calendario_B["Meta_Acumulada"].iloc[-1]
+    meta = base_final["Meta_Acumulada"].iloc[-1]
     base_final_plot = pd.DataFrame({
     "data_servico": [],
     "Produtividade_Acumulada": [],
