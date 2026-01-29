@@ -48,8 +48,6 @@ calendario_D = pd.DataFrame({
      "data_servico": pd.date_range(start=inicio_mes, end=hoje, freq="D")
 })
 
-st.sidebar.write(f"Total Bruto na Planilha:{inicio_mes}")
-
 # ====== FILTROS ======
 
 w1, w2, w3, w4 = st.columns(4)
