@@ -432,7 +432,7 @@ with w1:
     color="Classificacao_AIC",
     text="Qtd",
     title="Evolução de Obras Liberadas: Encerradas vs. Pendentes (AIC)",
-    color_discrete_map={"ENCERRAR": "#ef553b", "ENCERRADO": "#636efa"}, # Vermelho para alerta, Azul para ok
+    color_discrete_map={"ENCERRAR": "#B62208", "ENCERRADO": "#09BD02"}, # Vermelho para alerta, Azul para ok
     barmode="stack"
     )
 
@@ -479,7 +479,7 @@ with w2:
         use_container_width=True,
         hide_index=True,
         column_config={
-            "P.I": st.column_config.TextColumn("Projeto de Investimento"),
+            "P.I": st.column_config.TextColumn("P.I"),
             "Qtd_Pendente": st.column_config.NumberColumn(
                 "Obras a Encerrar",
                 format="%d",
