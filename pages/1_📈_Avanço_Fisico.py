@@ -10,7 +10,7 @@ st.markdown(
         padding: 10px;
         border-radius: 8px;
     ">
-        Programação - Capex - Validação
+        Avanço Fisico - Capex
     </h3>
     """,
     unsafe_allow_html=True
