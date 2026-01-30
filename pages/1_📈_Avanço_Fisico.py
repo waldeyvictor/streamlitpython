@@ -433,7 +433,8 @@ with w1:
     text="Qtd",
     title="Evolução de Obras Liberadas: Encerradas vs. Pendentes (AIC)",
     color_discrete_map={"ENCERRAR": "#B62208", "ENCERRADO": "#09BD02"}, # Vermelho para alerta, Azul para ok
-    barmode="stack"
+    barmode="stack",
+    height=475
     )
 
     fig_aic.update_layout(
@@ -483,7 +484,8 @@ with w2:
             "Qtd_Pendente": st.column_config.NumberColumn(
                 "Obras a Encerrar",
                 format="%d",
-                help="Soma total de obras com status de AIC"
+                help="Soma total de obras com status de AIC",
+                
             )
-        }
+        }, height=425
     )
