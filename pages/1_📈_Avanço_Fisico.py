@@ -398,30 +398,34 @@ with g5:
 
 st.divider()
 
-mapeamento_aic = {
+w1,w2 = st.columns([4,1])
+
+with w1:
+
+    mapeamento_aic = {
     "ABER/ABER": "ENCERRAR", "LIB/ATEC": "ENCERRAR", "LIB/CONC": "ENCERRAR",
     "LIB/DEV": "ENCERRAR", "LIB/DFEC": "ENCERRAR", "LIB/ENER": "ENCERRAR",
     "LIB/LOG": "ENCERRAR", "LIB/PEND": "ENCERRAR",
     # Todos os outros são ENCERRADO
-}
+    }
 
 # Criar coluna de classificação (Padrão 'ENCERRADO', altera se estiver no mapa acima)
-df["Classificacao_AIC"] = df["Status"].map(mapeamento_aic).fillna("ENCERRADO")
+    df["Classificacao_AIC"] = df["Status"].map(mapeamento_aic).fillna("ENCERRADO")
 
 # 3. Filtrar pelo Ano Selecionado (Data_Log)
-df_aic = df[
+    df_aic = df[
     (df["Data_Log"].notna()) & 
     (df["Data_Log"].dt.year.isin(ano_sel))
-].copy()
+    ].copy()
 
-df_aic["Mes_Num"] = df_aic["Data_Log"].dt.month
-df_aic["Mês"] = df_aic["Data_Log"].dt.strftime('%b')
+    df_aic["Mes_Num"] = df_aic["Data_Log"].dt.month
+    df_aic["Mês"] = df_aic["Data_Log"].dt.strftime('%b')
 
 # 4. Agrupar para o Gráfico
-resumo_aic = df_aic.groupby(["Mes_Num", "Mês", "Classificacao_AIC"]).size().reset_index(name="Qtd")
-resumo_aic = resumo_aic.sort_values("Mes_Num")
+    resumo_aic = df_aic.groupby(["Mes_Num", "Mês", "Classificacao_AIC"]).size().reset_index(name="Qtd")
+    resumo_aic = resumo_aic.sort_values("Mes_Num")
 
-fig_aic = px.bar(
+    fig_aic = px.bar(
     resumo_aic,
     x="Mês",
     y="Qtd",
@@ -430,7 +434,56 @@ fig_aic = px.bar(
     title="Evolução de Obras Liberadas: Encerradas vs. Pendentes (AIC)",
     color_discrete_map={"ENCERRAR": "#ef553b", "ENCERRADO": "#636efa"}, # Vermelho para alerta, Azul para ok
     barmode="stack"
-)
+    )
 
-fig_aic.update_layout(xaxis_title="Mês de Liberação (Logística)", yaxis_title="Qtd Obras")
-st.plotly_chart(fig_aic, use_container_width=True)
+    fig_aic.update_layout(
+    xaxis_title="Mês de Liberação (Logística)",
+    yaxis_title="Qtd Obras",
+    legend=dict(
+        orientation="h",       # Orientação Horizontal
+        yanchor="bottom",      # Ancora na base
+        y=-0.3,                # Posição vertical (negativo para ficar abaixo do eixo X)
+        xanchor="center",      # Ancora no centro
+        x=0.5,                 # Posição horizontal centralizada
+        title_text=""          # Remove o título da legenda se quiser ganhar espaço
+    ),
+    margin=dict(b=50)          # Aumenta a margem inferior para a legenda não cortar
+    )
+    st.plotly_chart(fig_aic, use_container_width=True)
+
+with w2:
+    # 1. Criar a tabela base de pendentes
+    df_pendente = df_aic[df_aic["Classificacao_AIC"] == "ENCERRAR"]
+    tabela_pi_aic = df_pendente.groupby("P.I").agg(
+    Qtd_Pendente=("Status", "count")
+    ).reset_index().sort_values("Qtd_Pendente", ascending=False)
+
+# 2. Calcular o Total Geral
+    total_obras = tabela_pi_aic["Qtd_Pendente"].sum()
+
+# 3. Criar a linha de Total para o DataFrame
+    linha_total = pd.DataFrame({
+    "P.I": ["TOTAL GERAL"], 
+    "Qtd_Pendente": [total_obras]
+    })
+
+# 4. Concatenar a tabela com a linha de total
+# Usamos o ignore_index para não dar conflito de índices
+    tabela_com_total = pd.concat([tabela_pi_aic, linha_total], ignore_index=True)
+
+    st.markdown("##### 📋 Detalhamento AIC por P.I")
+
+# 5. Exibir com formatação especial
+    st.dataframe(
+        tabela_com_total,
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "P.I": st.column_config.TextColumn("Projeto de Investimento"),
+            "Qtd_Pendente": st.column_config.NumberColumn(
+                "Obras a Encerrar",
+                format="%d",
+                help="Soma total de obras com status de AIC"
+            )
+        }
+    )
